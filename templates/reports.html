@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Reports | FactoryFlow</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 240px;
+            background: #111827;
+            color: white;
+            padding: 25px 15px;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 15px 30px;
+        }
+
+        .logo span {
+            color: #38bdf8;
+        }
+
+        .nav-link {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 13px 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            transition: 0.25s;
+        }
+
+        .nav-link:hover {
+            background: #1e293b;
+            color: white;
+        }
+
+        .nav-link.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* MAIN */
+
+        .main {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+            padding: 35px;
+        }
+
+        .page-title {
+            margin-bottom: 30px;
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 32px;
+            color: #111827;
+        }
+
+        .page-title p {
+            margin-top: 7px;
+            color: #64748b;
+        }
+
+        /* SUMMARY CARDS */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+        }
+
+        .stat-icon {
+            float: right;
+            font-size: 25px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        /* CHART */
+
+        .chart-card {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+        }
+
+        .chart-header {
+            margin-bottom: 20px;
+        }
+
+        .chart-header h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .chart-header p {
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .chart-container {
+            height: 330px;
+        }
+
+        /* REPORT CARDS */
+
+        .report-card {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .report-header h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .report-header span {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        /* TABLE */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 15px 14px;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .order {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .quantity {
+            font-weight: bold;
+        }
+
+        /* STATUS */
+
+        .status {
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .progress {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .other {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        /* INVENTORY */
+
+        .material-code {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .material-name {
+            font-weight: bold;
+        }
+
+        .warehouse {
+            background: #f1f5f9;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* EMPTY */
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1100px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 190px;
+            }
+
+            .main {
+                margin-left: 190px;
+                width: calc(100% - 190px);
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            Factory<span>Flow</span>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="nav-link">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('machines') }}" class="nav-link">
+            Machines
+        </a>
+
+        <a href="{{ url_for('products') }}" class="nav-link">
+            Products
+        </a>
+
+        <a href="{{ url_for('production') }}" class="nav-link">
+            Production
+        </a>
+
+        <a href="{{ url_for('inventory') }}" class="nav-link">
+            Inventory
+        </a>
+
+        <a href="{{ url_for('employees') }}" class="nav-link">
+            Employees
+        </a>
+
+        <a href="{{ url_for('reports') }}" class="nav-link active">
+            Reports
+        </a>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+        <!-- HEADER -->
+
+        <div class="page-title">
+
+            <h1>Factory Reports</h1>
+
+            <p>
+                Analyze production performance, inventory levels,
+                and factory operations.
+            </p>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="stats">
+
+            <div class="stat-card">
+
+                <div class="stat-icon">🏭</div>
+
+                <div class="stat-label">
+                    Total Produced
+                </div>
+
+                <div class="stat-value">
+                    {{ total_produced }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">📋</div>
+
+                <div class="stat-label">
+                    Planned Production
+                </div>
+
+                <div class="stat-value">
+                    {{ total_planned }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">📦</div>
+
+                <div class="stat-label">
+                    Products
+                </div>
+
+                <div class="stat-value">
+                    {{ product_count }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">👥</div>
+
+                <div class="stat-label">
+                    Employees
+                </div>
+
+                <div class="stat-value">
+                    {{ employee_count }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PRODUCTION CHART -->
+
+        <div class="chart-card">
+
+            <div class="chart-header">
+
+                <h2>Production Performance</h2>
+
+                <p>
+                    Planned quantity compared with actual production.
+                </p>
+
+            </div>
+
+            <div class="chart-container">
+
+                <canvas id="productionChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+        <!-- PRODUCTION REPORT -->
+
+        <div class="report-card">
+
+            <div class="report-header">
+
+                <div>
+                    <h2>Production Report</h2>
+                </div>
+
+                <span>
+                    {{ production_report|length }} Orders
+                </span>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Order</th>
+                            <th>Product</th>
+                            <th>Machine</th>
+                            <th>Employee</th>
+                            <th>Planned</th>
+                            <th>Produced</th>
+                            <th>Status</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for row in production_report %}
+
+                        <tr>
+
+                            <td>
+                                <span class="order">
+                                    {{ row[0] }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ row[1] }}
+                            </td>
+
+                            <td>
+                                {{ row[2] }}
+                            </td>
+
+                            <td>
+                                {{ row[3] }}
+                            </td>
+
+                            <td class="quantity">
+                                {{ row[4] }}
+                            </td>
+
+                            <td class="quantity">
+                                {{ row[5] }}
+                            </td>
+
+                            <td>
+
+                                {% if row[6] == "Completed" %}
+
+                                    <span class="status completed">
+                                        Completed
+                                    </span>
+
+                                {% elif row[6] == "In Progress" %}
+
+                                    <span class="status progress">
+                                        In Progress
+                                    </span>
+
+                                {% elif row[6] == "Pending" %}
+
+                                    <span class="status pending">
+                                        Pending
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="status other">
+                                        {{ row[6] }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="7">
+
+                                <div class="empty">
+                                    No production report data available.
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- INVENTORY REPORT -->
+
+        <div class="report-card">
+
+            <div class="report-header">
+
+                <div>
+                    <h2>Inventory Report</h2>
+                </div>
+
+                <span>
+                    {{ inventory_report|length }} Materials
+                </span>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Material Code</th>
+                            <th>Material Name</th>
+                            <th>Quantity</th>
+                            <th>Warehouse</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for row in inventory_report %}
+
+                        <tr>
+
+                            <td>
+                                <span class="material-code">
+                                    {{ row[0] }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="material-name">
+                                    {{ row[1] }}
+                                </span>
+                            </td>
+
+                            <td class="quantity">
+                                {{ row[2] }}
+                            </td>
+
+                            <td>
+                                <span class="warehouse">
+                                    {{ row[3] }}
+                                </span>
+                            </td>
+
+                        </tr>
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="4">
+
+                                <div class="empty">
+                                    No inventory report data available.
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- CHART -->
+
+<script>
+
+    const productionData = {{ production_report | tojson }};
+
+    const labels = productionData.map(row => row[0]);
+
+    const plannedData = productionData.map(row => Number(row[4]));
+
+    const producedData = productionData.map(row => Number(row[5]));
+
+
+    const ctx = document
+        .getElementById("productionChart")
+        .getContext("2d");
+
+
+    new Chart(ctx, {
+
+        type: "bar",
+
+        data: {
+
+            labels: labels,
+
+            datasets: [
+
+                {
+                    label: "Planned Quantity",
+                    data: plannedData
+                },
+
+                {
+                    label: "Produced Quantity",
+                    data: producedData
+                }
+
+            ]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            plugins: {
+
+                legend: {
+                    position: "top"
+                }
+
+            },
+
+            scales: {
+
+                y: {
+                    beginAtZero: true
+                }
+
+            }
+
+        }
+
+    });
+
+</script>
+
+</body>
+</html>

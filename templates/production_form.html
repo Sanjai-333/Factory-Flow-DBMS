@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% if production_order %}
+            Edit Production Order
+        {% else %}
+            Add Production Order
+        {% endif %}
+        - FactoryFlow
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        .page-content {
+            padding: 30px;
+            max-width: 1000px;
+        }
+
+        .form-card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 14px;
+            padding: 30px;
+        }
+
+        .form-header {
+            margin-bottom: 25px;
+        }
+
+        .form-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .form-subtitle {
+            color: #8b93a7;
+            margin-top: 6px;
+            font-size: 14px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full {
+            grid-column: span 2;
+        }
+
+        label {
+            margin-bottom: 8px;
+            color: #d1d5db;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            background: #0f172a;
+            color: #f3f4f6;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #6366f1;
+        }
+
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .save-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background: #4338ca;
+        }
+
+        .cancel-btn {
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .cancel-btn:hover {
+            background: #4b5563;
+        }
+
+        @media (max-width: 700px) {
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: span 1;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-header">
+
+            <div class="logo">
+
+                <span class="logo-icon">⚙</span>
+
+                <span>FactoryFlow</span>
+
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-menu">
+
+            <div class="menu-title">
+                MAIN
+            </div>
+
+            <a href="/" class="menu-item">
+
+                <span class="menu-icon">📊</span>
+
+                <span>Dashboard</span>
+
+            </a>
+
+            <a href="/machines" class="menu-item">
+
+                <span class="menu-icon">⚙️</span>
+
+                <span>Machines</span>
+
+            </a>
+
+            <a href="/products" class="menu-item">
+
+                <span class="menu-icon">📦</span>
+
+                <span>Products</span>
+
+            </a>
+
+
+            <div class="menu-title">
+                OPERATIONS
+            </div>
+
+            <a href="/production" class="menu-item active">
+
+                <span class="menu-icon">🏭</span>
+
+                <span>Production</span>
+
+            </a>
+
+            <a href="#" class="menu-item">
+
+                <span class="menu-icon">📋</span>
+
+                <span>Inventory</span>
+
+            </a>
+
+            <a href="#" class="menu-item">
+
+                <span class="menu-icon">🔧</span>
+
+                <span>Maintenance</span>
+
+            </a>
+
+            <a href="#" class="menu-item">
+
+                <span class="menu-icon">✅</span>
+
+                <span>Quality Control</span>
+
+            </a>
+
+
+            <div class="menu-title">
+                MANAGEMENT
+            </div>
+
+            <a href="#" class="menu-item">
+
+                <span class="menu-icon">👥</span>
+
+                <span>Employees</span>
+
+            </a>
+
+            <a href="#" class="menu-item">
+
+                <span class="menu-icon">🚚</span>
+
+                <span>Suppliers</span>
+
+            </a>
+
+            <a href="#" class="menu-item">
+
+                <span class="menu-icon">📈</span>
+
+                <span>Reports</span>
+
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                <span>System Online</span>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+
+                <h1>Production Management</h1>
+
+                <p>
+                    {% if production_order %}
+                        Update production order
+                    {% else %}
+                        Create a new production order
+                    {% endif %}
+                </p>
+
+            </div>
+
+        </header>
+
+
+        <section class="page-content">
+
+            <div class="form-card">
+
+                <div class="form-header">
+
+                    <h2 class="form-title">
+
+                        {% if production_order %}
+                            Edit Production Order
+                        {% else %}
+                            Add Production Order
+                        {% endif %}
+
+                    </h2>
+
+                    <p class="form-subtitle">
+                        Enter production planning and execution details.
+                    </p>
+
+                </div>
+
+
+                <form
+                    method="POST"
+                    action="{% if production_order %}
+                                /production/edit/{{ production_order[0] }}
+                            {% else %}
+                                /production/add
+                            {% endif %}"
+                >
+
+                    <div class="form-grid">
+
+
+                        <!-- ORDER NUMBER -->
+
+                        <div class="form-group">
+
+                            <label for="order_number">
+                                Order Number
+                            </label>
+
+                            <input
+                                type="text"
+                                id="order_number"
+                                name="order_number"
+                                placeholder="Example: PO005"
+                                value="{% if production_order %}{{ production_order[1] }}{% endif %}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- PRODUCT -->
+
+                        <div class="form-group">
+
+                            <label for="product_id">
+                                Product
+                            </label>
+
+                            <select
+                                id="product_id"
+                                name="product_id"
+                                required
+                            >
+
+                                <option value="">
+                                    Select Product
+                                </option>
+
+                                {% for product in products %}
+
+                                    <option
+                                        value="{{ product[0] }}"
+                                        {% if production_order and production_order[2] == product[0] %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ product[1] }} - {{ product[2] }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- MACHINE -->
+
+                        <div class="form-group">
+
+                            <label for="machine_id">
+                                Machine
+                            </label>
+
+                            <select
+                                id="machine_id"
+                                name="machine_id"
+                                required
+                            >
+
+                                <option value="">
+                                    Select Machine
+                                </option>
+
+                                {% for machine in machines %}
+
+                                    <option
+                                        value="{{ machine[0] }}"
+                                        {% if production_order and production_order[3] == machine[0] %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ machine[1] }} - {{ machine[2] }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- EMPLOYEE -->
+
+                        <div class="form-group">
+
+                            <label for="employee_id">
+                                Employee
+                            </label>
+
+                            <select
+                                id="employee_id"
+                                name="employee_id"
+                                required
+                            >
+
+                                <option value="">
+                                    Select Employee
+                                </option>
+
+                                {% for employee in employees %}
+
+                                    <option
+                                        value="{{ employee[0] }}"
+                                        {% if production_order and production_order[4] == employee[0] %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ employee[1] }} - {{ employee[2] }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- PLANNED QUANTITY -->
+
+                        <div class="form-group">
+
+                            <label for="planned_quantity">
+                                Planned Quantity
+                            </label>
+
+                            <input
+                                type="number"
+                                id="planned_quantity"
+                                name="planned_quantity"
+                                min="0"
+                                value="{% if production_order %}{{ production_order[5] }}{% else %}0{% endif %}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- PRODUCED QUANTITY -->
+
+                        <div class="form-group">
+
+                            <label for="produced_quantity">
+                                Produced Quantity
+                            </label>
+
+                            <input
+                                type="number"
+                                id="produced_quantity"
+                                name="produced_quantity"
+                                min="0"
+                                value="{% if production_order %}{{ production_order[6] }}{% else %}0{% endif %}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- START TIME -->
+
+                        <div class="form-group">
+
+                            <label for="start_time">
+                                Start Time
+                            </label>
+
+                            <input
+                                type="datetime-local"
+                                id="start_time"
+                                name="start_time"
+                                value="{% if production_order and production_order[7] %}{{ production_order[7].strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
+                            >
+
+                        </div>
+
+
+                        <!-- END TIME -->
+
+                        <div class="form-group">
+
+                            <label for="end_time">
+                                End Time
+                            </label>
+
+                            <input
+                                type="datetime-local"
+                                id="end_time"
+                                name="end_time"
+                                value="{% if production_order and production_order[8] %}{{ production_order[8].strftime('%Y-%m-%dT%H:%M') }}{% endif %}"
+                            >
+
+                        </div>
+
+
+                        <!-- STATUS -->
+
+                        <div class="form-group full">
+
+                            <label for="status">
+                                Production Status
+                            </label>
+
+                            <select
+                                id="status"
+                                name="status"
+                                required
+                            >
+
+                                <option value="Pending"
+                                    {% if production_order and production_order[9] == "Pending" %}
+                                        selected
+                                    {% endif %}>
+                                    Pending
+                                </option>
+
+                                <option value="In Progress"
+                                    {% if production_order and production_order[9] == "In Progress" %}
+                                        selected
+                                    {% endif %}>
+                                    In Progress
+                                </option>
+
+                                <option value="Completed"
+                                    {% if production_order and production_order[9] == "Completed" %}
+                                        selected
+                                    {% endif %}>
+                                    Completed
+                                </option>
+
+                                <option value="Cancelled"
+                                    {% if production_order and production_order[9] == "Cancelled" %}
+                                        selected
+                                    {% endif %}>
+                                    Cancelled
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- BUTTONS -->
+
+                    <div class="form-actions">
+
+                        <button
+                            type="submit"
+                            class="save-btn"
+                        >
+                            {% if production_order %}
+                                Update Production Order
+                            {% else %}
+                                Add Production Order
+                            {% endif %}
+                        </button>
+
+                        <a
+                            href="/production"
+                            class="cancel-btn"
+                        >
+                            Cancel
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

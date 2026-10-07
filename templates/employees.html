@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Employees | FactoryFlow</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 240px;
+            background: #111827;
+            color: white;
+            padding: 25px 15px;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 15px 30px;
+        }
+
+        .logo span {
+            color: #38bdf8;
+        }
+
+        .nav-link {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 13px 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            transition: 0.25s;
+        }
+
+        .nav-link:hover {
+            background: #1e293b;
+            color: white;
+        }
+
+        .nav-link.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* MAIN */
+
+        .main {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+            padding: 35px;
+        }
+
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 32px;
+            color: #111827;
+        }
+
+        .page-title p {
+            margin-top: 7px;
+            color: #64748b;
+        }
+
+        .add-btn {
+            background: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.25s;
+        }
+
+        .add-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* STAT CARDS */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-icon {
+            float: right;
+            font-size: 25px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        /* EMPLOYEE SECTION */
+
+        .employee-card {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .section-header p {
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .employee-count {
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 8px 13px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        /* TABLE */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 16px 14px;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        /* EMPLOYEE NAME */
+
+        .employee-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #dbeafe;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .employee-name {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .employee-code {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        /* DEPARTMENT */
+
+        .department {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* ROLE */
+
+        .role {
+            color: #475569;
+        }
+
+        /* STATUS */
+
+        .status {
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-other {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        /* ACTIONS */
+
+        .actions {
+            display: flex;
+            gap: 7px;
+        }
+
+        .action-btn {
+            text-decoration: none;
+            padding: 7px 10px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .edit {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* EMPTY */
+
+        .empty {
+            text-align: center;
+            padding: 55px;
+            color: #64748b;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1100px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 190px;
+            }
+
+            .main {
+                margin-left: 190px;
+                width: calc(100% - 190px);
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .top-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            Factory<span>Flow</span>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="nav-link">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('machines') }}" class="nav-link">
+            Machines
+        </a>
+
+        <a href="{{ url_for('products') }}" class="nav-link">
+            Products
+        </a>
+
+        <a href="{{ url_for('production') }}" class="nav-link">
+            Production
+        </a>
+
+        <a href="{{ url_for('inventory') }}" class="nav-link">
+            Inventory
+        </a>
+
+        <a href="{{ url_for('employees') }}" class="nav-link active">
+            Employees
+        </a>
+
+        <a href="{{ url_for('reports') }}" class="nav-link">
+            Reports
+        </a>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+        <!-- HEADER -->
+
+        <div class="top-section">
+
+            <div class="page-title">
+                <h1>Employee Management</h1>
+                <p>Manage factory workforce and employee information.</p>
+            </div>
+
+            <a href="{{ url_for('add_employee') }}"
+               class="add-btn">
+                + Add Employee
+            </a>
+
+        </div>
+
+
+        <!-- STATISTICS -->
+
+        <div class="stats">
+
+            <div class="stat-card">
+
+                <div class="stat-icon">👥</div>
+
+                <div class="stat-label">
+                    Total Employees
+                </div>
+
+                <div class="stat-value">
+                    {{ employees|length }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">🟢</div>
+
+                <div class="stat-label">
+                    Active Employees
+                </div>
+
+                <div class="stat-value">
+                    {{ employees
+                       |selectattr("8", "equalto", "Active")
+                       |list
+                       |length }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">🏢</div>
+
+                <div class="stat-label">
+                    Departments
+                </div>
+
+                <div class="stat-value">
+                    {{ employees
+                       |map(attribute="3")
+                       |unique
+                       |list
+                       |length }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">💼</div>
+
+                <div class="stat-label">
+                    Job Roles
+                </div>
+
+                <div class="stat-value">
+                    {{ employees
+                       |map(attribute="4")
+                       |unique
+                       |list
+                       |length }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- EMPLOYEE TABLE -->
+
+        <div class="employee-card">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Factory Workforce</h2>
+                    <p>Employee directory and organizational information</p>
+                </div>
+
+                <div class="employee-count">
+                    {{ employees|length }} Employees
+                </div>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Job Role</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Hire Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for employee in employees %}
+
+                        <tr>
+
+                            <!-- EMPLOYEE -->
+
+                            <td>
+
+                                <div class="employee-info">
+
+                                    <div class="avatar">
+                                        {{ employee[2][0]|upper }}
+                                    </div>
+
+                                    <div>
+
+                                        <div class="employee-name">
+                                            {{ employee[2] }}
+                                        </div>
+
+                                        <div class="employee-code">
+                                            {{ employee[1] }}
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- DEPARTMENT -->
+
+                            <td>
+
+                                <span class="department">
+                                    {{ employee[3] }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- ROLE -->
+
+                            <td>
+                                <span class="role">
+                                    {{ employee[4] }}
+                                </span>
+                            </td>
+
+
+                            <!-- PHONE -->
+
+                            <td>
+                                {{ employee[5] }}
+                            </td>
+
+
+                            <!-- EMAIL -->
+
+                            <td>
+                                {{ employee[6] }}
+                            </td>
+
+
+                            <!-- HIRE DATE -->
+
+                            <td>
+                                {{ employee[7] }}
+                            </td>
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+                                {% if employee[8] == "Active" %}
+
+                                    <span class="status status-active">
+                                        Active
+                                    </span>
+
+                                {% elif employee[8] == "Inactive" %}
+
+                                    <span class="status status-inactive">
+                                        Inactive
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="status status-other">
+                                        {{ employee[8] }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- ACTIONS -->
+
+                            <td>
+
+                                <div class="actions">
+
+                                    <a href="{{ url_for('edit_employee', employee_id=employee[0]) }}"
+                                       class="action-btn edit">
+                                        Edit
+                                    </a>
+
+                                    <a href="{{ url_for('delete_employee', employee_id=employee[0]) }}"
+                                       class="action-btn delete"
+                                       onclick="return confirm('Are you sure you want to delete this employee?');">
+                                        Delete
+                                    </a>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="8">
+
+                                <div class="empty">
+
+                                    <h3>No employees found</h3>
+
+                                    <p>
+                                        Add your first employee to build
+                                        the factory workforce.
+                                    </p>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FactoryFlow - Transaction History</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <h2>FactoryFlow</h2>
+            <span>Manufacturing System</span>
+        </div>
+
+        <div class="sidebar-menu">
+
+            <div class="menu-title">MAIN</div>
+
+            <a href="{{ url_for('home') }}" class="menu-item">
+                <span>📊</span>
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('machines') }}" class="menu-item">
+                <span>⚙️</span>
+                Machines
+            </a>
+
+            <a href="{{ url_for('products') }}" class="menu-item">
+                <span>📦</span>
+                Products
+            </a>
+
+            <a href="{{ url_for('production') }}" class="menu-item">
+                <span>🏭</span>
+                Production
+            </a>
+
+            <a href="{{ url_for('inventory') }}" class="menu-item">
+                <span>📋</span>
+                Inventory
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <main class="main-content">
+
+        <div style="padding:30px;">
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:25px;
+            ">
+
+                <div>
+
+                    <h1>Transaction History</h1>
+
+                    <p>
+                        Complete inventory stock movement history
+                    </p>
+
+                </div>
+
+                <a href="{{ url_for('inventory') }}"
+                   class="btn btn-secondary">
+                    ← Back to Inventory
+                </a>
+
+            </div>
+
+
+            <div class="inventory-table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Material</th>
+                            <th>Transaction</th>
+                            <th>Quantity</th>
+                            <th>Date</th>
+                            <th>Reference</th>
+                            <th>Notes</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for transaction in transactions %}
+
+                        <tr>
+
+                            <td>
+                                {{ transaction[0] }}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ transaction[1] }}
+                                </strong>
+                                <br>
+                                {{ transaction[2] }}
+                            </td>
+
+                            <td>
+
+                                {% if transaction[3] == "Stock In" %}
+
+                                    <span class="status-badge stock-ok">
+                                        ↑ Stock In
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="status-badge stock-low">
+                                        ↓ Stock Out
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ "%.2f"|format(transaction[4]) }}
+                            </td>
+
+                            <td>
+                                {{ transaction[5].strftime("%d-%m-%Y %H:%M") }}
+                            </td>
+
+                            <td>
+                                {{ transaction[6] or "-" }}
+                            </td>
+
+                            <td>
+                                {{ transaction[7] or "-" }}
+                            </td>
+
+                        </tr>
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="7"
+                                style="text-align:center;">
+
+                                No transactions found.
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>

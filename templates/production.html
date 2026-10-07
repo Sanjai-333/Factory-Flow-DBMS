@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production | FactoryFlow</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 240px;
+            background: #111827;
+            color: white;
+            padding: 25px 15px;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 15px 30px;
+        }
+
+        .logo span {
+            color: #38bdf8;
+        }
+
+        .nav-link {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 13px 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            transition: 0.25s;
+        }
+
+        .nav-link:hover {
+            background: #1e293b;
+            color: white;
+        }
+
+        .nav-link.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* MAIN */
+
+        .main {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+            padding: 35px;
+        }
+
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 32px;
+            color: #111827;
+        }
+
+        .page-title p {
+            margin-top: 7px;
+            color: #64748b;
+        }
+
+        .add-btn {
+            background: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.25s;
+        }
+
+        .add-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* STAT CARDS */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .stat-icon {
+            float: right;
+            font-size: 25px;
+        }
+
+        /* PRODUCTION TABLE */
+
+        .table-card {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .table-header h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .table-header span {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 16px 14px;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .order-number {
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .quantity {
+            font-weight: bold;
+        }
+
+        /* STATUS */
+
+        .status {
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-progress {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-other {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        /* PROGRESS */
+
+        .progress-container {
+            width: 120px;
+        }
+
+        .progress-bar {
+            height: 7px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* ACTIONS */
+
+        .actions {
+            display: flex;
+            gap: 7px;
+        }
+
+        .action-btn {
+            text-decoration: none;
+            padding: 7px 10px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .edit {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* EMPTY */
+
+        .empty {
+            text-align: center;
+            padding: 50px;
+            color: #64748b;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1100px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 190px;
+            }
+
+            .main {
+                margin-left: 190px;
+                width: calc(100% - 190px);
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .top-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            Factory<span>Flow</span>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="nav-link">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('machines') }}" class="nav-link">
+            Machines
+        </a>
+
+        <a href="{{ url_for('products') }}" class="nav-link">
+            Products
+        </a>
+
+        <a href="{{ url_for('production') }}" class="nav-link active">
+            Production
+        </a>
+
+        <a href="{{ url_for('inventory') }}" class="nav-link">
+            Inventory
+        </a>
+
+        <a href="{{ url_for('employees') }}" class="nav-link">
+            Employees
+        </a>
+
+        <a href="{{ url_for('reports') }}" class="nav-link">
+            Reports
+        </a>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+        <!-- HEADER -->
+
+        <div class="top-section">
+
+            <div class="page-title">
+                <h1>Production Management</h1>
+                <p>Monitor and manage manufacturing production orders.</p>
+            </div>
+
+            <a href="{{ url_for('add_production') }}" class="add-btn">
+                + Add Production
+            </a>
+
+        </div>
+
+
+        <!-- STATISTICS -->
+
+        <div class="stats">
+
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-label">Total Orders</div>
+                <div class="stat-value">
+                    {{ production|length }}
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-label">Planned Quantity</div>
+                <div class="stat-value">
+                    {{ production|sum(attribute="5") }}
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">🏭</div>
+                <div class="stat-label">Produced Quantity</div>
+                <div class="stat-value">
+                    {{ production|sum(attribute="6") }}
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">⚙️</div>
+                <div class="stat-label">Active Orders</div>
+                <div class="stat-value">
+                    {{ production|selectattr("9", "equalto", "In Progress")|list|length }}
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- TABLE -->
+
+        <div class="table-card">
+
+            <div class="table-header">
+
+                <div>
+                    <h2>Production Orders</h2>
+                    <span>Manufacturing activity and order progress</span>
+                </div>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Order</th>
+                            <th>Product</th>
+                            <th>Machine</th>
+                            <th>Employee</th>
+                            <th>Planned</th>
+                            <th>Produced</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for item in production %}
+
+                        {% set percentage = ((item[6] / item[5]) * 100) if item[5] > 0 else 0 %}
+
+                        <tr>
+
+                            <td>
+                                <span class="order-number">
+                                    {{ item[1] }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ item[2] }}
+                            </td>
+
+                            <td>
+                                {{ item[3] }}
+                            </td>
+
+                            <td>
+                                {{ item[4] }}
+                            </td>
+
+                            <td class="quantity">
+                                {{ item[5] }}
+                            </td>
+
+                            <td class="quantity">
+                                {{ item[6] }}
+                            </td>
+
+                            <td>
+
+                                <div class="progress-container">
+
+                                    <div class="progress-bar">
+                                        <div class="progress-fill"
+                                             style="width: {{ [percentage, 100]|min }}%;">
+                                        </div>
+                                    </div>
+
+                                    <div class="progress-text">
+                                        {{ "%.1f"|format(percentage) }}%
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <td>
+
+                                {% if item[9] == "Completed" %}
+
+                                    <span class="status status-completed">
+                                        Completed
+                                    </span>
+
+                                {% elif item[9] == "In Progress" %}
+
+                                    <span class="status status-progress">
+                                        In Progress
+                                    </span>
+
+                                {% elif item[9] == "Pending" %}
+
+                                    <span class="status status-pending">
+                                        Pending
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="status status-other">
+                                        {{ item[9] }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="actions">
+
+                                    <a href="{{ url_for('edit_production', production_id=item[0]) }}"
+                                       class="action-btn edit">
+                                        Edit
+                                    </a>
+
+                                    <a href="{{ url_for('delete_production', production_id=item[0]) }}"
+                                       class="action-btn delete"
+                                       onclick="return confirm('Are you sure you want to delete this production order?');">
+                                        Delete
+                                    </a>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% else %}
+
+                        <tr>
+                            <td colspan="9">
+
+                                <div class="empty">
+                                    <h3>No production orders found</h3>
+                                    <p>Add your first production order to get started.</p>
+                                </div>
+
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>

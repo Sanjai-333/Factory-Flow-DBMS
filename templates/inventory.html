@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Inventory | FactoryFlow</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 240px;
+            background: #111827;
+            color: white;
+            padding: 25px 15px;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 15px 30px;
+        }
+
+        .logo span {
+            color: #38bdf8;
+        }
+
+        .nav-link {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 13px 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            transition: 0.25s;
+        }
+
+        .nav-link:hover {
+            background: #1e293b;
+            color: white;
+        }
+
+        .nav-link.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* MAIN */
+
+        .main {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+            padding: 35px;
+        }
+
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 32px;
+            color: #111827;
+        }
+
+        .page-title p {
+            margin-top: 7px;
+            color: #64748b;
+        }
+
+        .transaction-btn {
+            background: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.25s;
+        }
+
+        .transaction-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* STAT CARDS */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-icon {
+            float: right;
+            font-size: 25px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 27px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        /* INVENTORY CARD */
+
+        .inventory-card {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .inventory-header h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .inventory-header p {
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .material-count {
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 8px 13px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        /* TABLE */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 17px 14px;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .material-code {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .material-name {
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        /* QUANTITY */
+
+        .quantity-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-number {
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .quantity-bar {
+            width: 90px;
+            height: 7px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .quantity-fill {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 10px;
+        }
+
+        /* WAREHOUSE */
+
+        .warehouse {
+            display: inline-block;
+            padding: 7px 12px;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* STOCK STATUS */
+
+        .stock-status {
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .stock-good {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .stock-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .stock-low {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* EMPTY */
+
+        .empty {
+            text-align: center;
+            padding: 55px;
+            color: #64748b;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1100px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 190px;
+            }
+
+            .main {
+                margin-left: 190px;
+                width: calc(100% - 190px);
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .top-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            Factory<span>Flow</span>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="nav-link">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('machines') }}" class="nav-link">
+            Machines
+        </a>
+
+        <a href="{{ url_for('products') }}" class="nav-link">
+            Products
+        </a>
+
+        <a href="{{ url_for('production') }}" class="nav-link">
+            Production
+        </a>
+
+        <a href="{{ url_for('inventory') }}" class="nav-link active">
+            Inventory
+        </a>
+
+        <a href="{{ url_for('employees') }}" class="nav-link">
+            Employees
+        </a>
+
+        <a href="{{ url_for('reports') }}" class="nav-link">
+            Reports
+        </a>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+        <!-- HEADER -->
+
+        <div class="top-section">
+
+            <div class="page-title">
+                <h1>Inventory Management</h1>
+                <p>Monitor raw materials and warehouse stock levels.</p>
+            </div>
+
+            <a href="{{ url_for('inventory_transaction') }}"
+               class="transaction-btn">
+                + New Transaction
+            </a>
+
+        </div>
+
+
+        <!-- STATISTICS -->
+
+        <div class="stats">
+
+            <div class="stat-card">
+
+                <div class="stat-icon">📦</div>
+
+                <div class="stat-label">
+                    Total Materials
+                </div>
+
+                <div class="stat-value">
+                    {{ inventory|length }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">📊</div>
+
+                <div class="stat-label">
+                    Total Stock
+                </div>
+
+                <div class="stat-value">
+                    {{ "%.0f"|format(inventory|sum(attribute="3")) }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">🏭</div>
+
+                <div class="stat-label">
+                    Warehouses
+                </div>
+
+                <div class="stat-value">
+                    {{ inventory|map(attribute="4")|unique|list|length }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">⚠️</div>
+
+                <div class="stat-label">
+                    Low Stock
+                </div>
+
+                <div class="stat-value">
+
+                    {{
+                        inventory
+                        |selectattr("3", "lt", 300)
+                        |list
+                        |length
+                    }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- INVENTORY TABLE -->
+
+        <div class="inventory-card">
+
+            <div class="inventory-header">
+
+                <div>
+                    <h2>Raw Material Inventory</h2>
+                    <p>Current stock available across warehouses</p>
+                </div>
+
+                <div class="material-count">
+                    {{ inventory|length }} Materials
+                </div>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Material Code</th>
+                            <th>Material Name</th>
+                            <th>Quantity</th>
+                            <th>Warehouse</th>
+                            <th>Stock Status</th>
+                            <th>Last Updated</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for item in inventory %}
+
+                        <tr>
+
+                            <td>
+                                #{{ item[0] }}
+                            </td>
+
+
+                            <td>
+                                <span class="material-code">
+                                    {{ item[1] }}
+                                </span>
+                            </td>
+
+
+                            <td>
+                                <span class="material-name">
+                                    {{ item[2] }}
+                                </span>
+                            </td>
+
+
+                            <td>
+
+                                <div class="quantity-box">
+
+                                    <span class="quantity-number">
+                                        {{ item[3] }}
+                                    </span>
+
+                                    <div class="quantity-bar">
+
+                                        <div class="quantity-fill"
+                                             style="width: {{ [((item[3]|float / 2500) * 100), 100]|min }}%;">
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="warehouse">
+                                    {{ item[4] }}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                {% if item[3]|float < 300 %}
+
+                                    <span class="stock-status stock-low">
+                                        Low Stock
+                                    </span>
+
+                                {% elif item[3]|float < 800 %}
+
+                                    <span class="stock-status stock-medium">
+                                        Medium
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="stock-status stock-good">
+                                        Good Stock
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+                                {{ item[5] }}
+                            </td>
+
+                        </tr>
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="7">
+
+                                <div class="empty">
+
+                                    <h3>No inventory records found</h3>
+
+                                    <p>
+                                        Inventory information will appear here
+                                        once materials are added.
+                                    </p>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>
